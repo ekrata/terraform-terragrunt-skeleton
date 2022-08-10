@@ -1,6 +1,6 @@
 ---
 # https://www.terraform.io/docs/backends/types/s3.html
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Description: Initialize terraform admin account
 Metadata:
   AWS::CloudFormation::Interface:
@@ -35,11 +35,11 @@ Rules:
       - Assert: !Equals
           - !Ref AWS::AccountId
           - !Ref AdminAccountId
-        AssertDescription: 'Stack can only be deployed into the specified AdminAccountId'
+        AssertDescription: "Stack can only be deployed into the specified AdminAccountId"
 
 Resources:
   TerraformStateLogBucket:
-    Type: 'AWS::S3::Bucket'
+    Type: "AWS::S3::Bucket"
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
@@ -56,7 +56,7 @@ Resources:
         RestrictPublicBuckets: True
 
   TerraformStateBucket:
-    Type: 'AWS::S3::Bucket'
+    Type: "AWS::S3::Bucket"
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
@@ -77,7 +77,7 @@ Resources:
         Status: Enabled
 
   TerraformStateLockTable:
-    Type: 'AWS::DynamoDB::Table'
+    Type: "AWS::DynamoDB::Table"
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
@@ -91,7 +91,7 @@ Resources:
       BillingMode: PAY_PER_REQUEST
 
   TerraformStateReadWritePolicy:
-    Type: 'AWS::IAM::ManagedPolicy'
+    Type: "AWS::IAM::ManagedPolicy"
     Properties:
       ManagedPolicyName: TerraformStateReadWrite
       Path: /terraform/
@@ -105,26 +105,28 @@ Resources:
           - Sid: AllowStateBucketList
             Effect: Allow
             Action:
-              - 's3:ListBucket'
-              - 's3:GetBucketVersioning'
+              - "s3:ListBucket"
+              - "s3:GetBucketVersioning"
+              - "s3:CreateBucket"
             Resource: !Sub "arn:aws:s3:::${StateBucketName}"
           - Sid: AllowStateReadWrite
             Effect: Allow
             Action:
-              - 's3:GetObject'
-              - 's3:PutObject'
+              - "s3:GetObject"
+              - "s3:PutObject"
             Resource: !Sub "arn:aws:s3:::${StateBucketName}/*"
           - Sid: AllowStateLockReadWrite
             Effect: Allow
             Action:
-              - 'dynamodb:DescribeTable'
-              - 'dynamodb:GetItem'
-              - 'dynamodb:PutItem'
-              - 'dynamodb:DeleteItem'
+              - "dynamodb:DescribeTable"
+              - "dynamodb:GetItem"
+              - "dynamodb:PutItem"
+              - "dynamodb:DeleteItem"
+              - "dynamodb:CreateTable"
             Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${LockTableName}"
 
   TerraformBackendRole:
-    Type: 'AWS::IAM::Role'
+    Type: "AWS::IAM::Role"
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -133,37 +135,37 @@ Resources:
             Principal:
               AWS: !Ref AWS::AccountId
             Action:
-              - 'sts:AssumeRole'
+              - "sts:AssumeRole"
             Condition:
               StringEquals:
                 aws:PrincipalType: User
               StringLike:
-                'aws:PrincipalTag/Terraformer': '*'
+                "aws:PrincipalTag/Terraformer": "*"
       RoleName: TerraformBackend
       Path: /terraform/
       ManagedPolicyArns:
         - !Ref TerraformStateReadWritePolicy
 
   TerraformStateBucketPolicy:
-    Type: 'AWS::S3::BucketPolicy'
+    Type: "AWS::S3::BucketPolicy"
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
       Bucket: !Ref TerraformStateBucket
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           ################################################
           # Require TLS always
           ################################################
 
-          - Sid: 'AllowTLSRequestsOnly'
-            Principal: '*'
+          - Sid: "AllowTLSRequestsOnly"
+            Principal: "*"
             Condition:
               Bool:
-                'aws:SecureTransport': false
+                "aws:SecureTransport": false
             Effect: Deny
-            Action: '*'
+            Action: "*"
             Resource:
               - !GetAtt "TerraformStateBucket.Arn"
               - !Sub
@@ -182,9 +184,9 @@ Resources:
               StringEquals:
                 aws:PrincipalType: User
               StringNotLike:
-                'aws:PrincipalTag/Terraformer': '*'
+                "aws:PrincipalTag/Terraformer": "*"
             Effect: Deny
-            Action: '*'
+            Action: "*"
             Resource:
               - !GetAtt "TerraformStateBucket.Arn"
               - !Sub
@@ -202,22 +204,22 @@ Resources:
               StringEquals:
                 aws:PrincipalType: User
               StringLike:
-                'aws:PrincipalTag/Terraformer': '*'
+                "aws:PrincipalTag/Terraformer": "*"
               StringNotEquals:
-                'aws:PrincipalTag/Terraformer': 'Admin'
+                "aws:PrincipalTag/Terraformer": "Admin"
             Effect: Deny
             NotAction:
-              - 's3:List*'
-              - 's3:Get*'
-              - 's3:Describe*'
-              - 's3:PutObject'
+              - "s3:List*"
+              - "s3:Get*"
+              - "s3:Describe*"
+              - "s3:PutObject"
               # Granting DeleteObject is safe because we have versioning enabled
               # on the bucket. DeleteObjectVersion is what we have to restrict
               # so that someone can't delete the delete marker and thereby
               # permanently delete state. Granting DeleteObject is helpful
               # because it allows NonAdmins to migrate state (i.e., rename state
               # files)
-              - 's3:DeleteObject'
+              - "s3:DeleteObject"
             Resource:
               - !GetAtt "TerraformStateBucket.Arn"
               - !Sub
@@ -243,7 +245,7 @@ Resources:
                     - "${TerraformBackendRoleId}:*"
                     - TerraformBackendRoleId: !GetAtt "TerraformBackendRole.RoleId"
             Effect: Deny
-            Action: '*'
+            Action: "*"
             Resource:
               - !GetAtt "TerraformStateBucket.Arn"
               - !Sub
@@ -264,10 +266,10 @@ Resources:
                     - TerraformBackendRoleId: !GetAtt "TerraformBackendRole.RoleId"
             Effect: Deny
             NotAction:
-              - 's3:ListBucket'
-              - 's3:GetBucketVersioning'
-              - 's3:GetObject'
-              - 's3:PutObject'
+              - "s3:ListBucket"
+              - "s3:GetBucketVersioning"
+              - "s3:GetObject"
+              - "s3:PutObject"
             Resource:
               - !GetAtt "TerraformStateBucket.Arn"
               - !Sub
@@ -289,7 +291,7 @@ Resources:
                   - Account
                   - User
             Effect: Deny
-            Action: '*'
+            Action: "*"
             Resource:
               - !GetAtt "TerraformStateBucket.Arn"
               - !Sub

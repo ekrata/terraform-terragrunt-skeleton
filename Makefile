@@ -1,7 +1,7 @@
-ADMIN_INIT_STACK_NAME := tf-admin-init
-STATE_BUCKET_NAME := terraform-skeleton-state
-STATE_LOG_BUCKET_NAME := terraform-skeleton-state-logs
-LOCK_TABLE_NAME := terraform-skeleton-state-locks
+ADMIN_INIT_STACK_NAME := tf-admin-init-ekrata
+STATE_BUCKET_NAME := terraform-skeleton-state-ekrata
+STATE_LOG_BUCKET_NAME := terraform-skeleton-state-logs-ekrata
+LOCK_TABLE_NAME := terraform-skeleton-state-locks-ekrata
 
 # Use a known profile to ensure account ID is correct
 ADMIN_ACCOUNT_ID := $(shell \

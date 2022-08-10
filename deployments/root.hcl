@@ -6,38 +6,17 @@ locals {
   tier  = local.deployment_path_components[0]
   stack = reverse(local.deployment_path_components)[0]
 
-  # Get a list of every path between root_deployments_directory and the path of
-  # the deployment
-  possible_config_dirs = [
+  # Get a list of every possible tfvars path between root_deployments_directory
+  # and the path of the deployment
+  possible_config_locations = [
     for i in range(0, length(local.deployment_path_components) + 1) :
     join("/", concat(
       [local.root_deployments_dir],
-      slice(local.deployment_path_components, 0, i)
+      slice(local.deployment_path_components, 0, i),
+      ["terraform.tfvars"]
     ))
   ]
-
-  # Generate a list of possible config files at every possible_config_dir
-  # (support both .yml and .yaml)
-  possible_config_paths = flatten([
-    for dir in local.possible_config_dirs : [
-      "${dir}/config.yml",
-      "${dir}/config.yaml"
-    ]
-  ])
-
-  # Load every YAML config file that exists into an HCL map
-  file_configs = [
-    for path in local.possible_config_paths :
-    yamldecode(file(path)) if fileexists(path)
-  ]
-
-  # Merge the maps together, with deeper configs overriding higher configs
-  merged_config = merge(local.file_configs...)
 }
-
-# Pass the merged config to terraform as variable values using TF_VAR_
-# environment variables
-inputs = local.merged_config
 
 remote_state {
   backend = "s3"
@@ -46,20 +25,25 @@ remote_state {
     if_exists = "overwrite"
   }
   config = {
-    bucket   = "terraform-skeleton-state"
-    region   = "us-east-1"
+    bucket   = "terraform-skeleton-state-ekrata"
+    region   = "eu-west-2"
     encrypt  = true
-    role_arn = "arn:aws:iam::${get_aws_account_id()}:role/terraform/TerraformBackend"
+    # role_arn = "arn:aws:iam::${get_aws_account_id()}:role/terraform/TerraformBackend"
+    # role_arn = "arn:aws:iam::206508349906:role/terraform/TerraformBackend"
 
     key = "${dirname(local.relative_deployment_path)}/${local.stack}.tfstate"
 
-    dynamodb_table            = "terraform-skeleton-state-locks"
-    accesslogging_bucket_name = "terraform-skeleton-state-logs"
+    dynamodb_table            = "terraform-skeleton-state-locks-ekrata"
+    accesslogging_bucket_name = "terraform-skeleton-state-logs-ekrata"
   }
 }
 
 # Default the stack each deployment deploys based on its directory structure
 # Can be overridden by redefining this block in a child terragrunt.hcl
 terraform {
-  source = "${local.root_deployments_dir}/../modules/stacks/${local.tier}/${local.stack}"
+  source = "${local.root_deployments_dir}/../modules/stacks/${local.tier}/${local.stack}///"
+  extra_arguments "load_config_files" {
+    commands           = get_terraform_commands_that_need_vars()
+    optional_var_files = local.possible_config_locations
+  }
 }
