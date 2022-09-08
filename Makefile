@@ -5,7 +5,7 @@ LOCK_TABLE_NAME := terraform-skeleton-state-locks-ekrata
 
 # Use a known profile to ensure account ID is correct
 ADMIN_ACCOUNT_ID := $(shell \
-	aws --profile tf-admin-account sts get-caller-identity | jq -r .Account \
+	aws sts get-caller-identity | jq -r .Account \
 )
 
 BACKEND_ROLE_PATH := terraform/TerraformBackend

@@ -14,10 +14,12 @@ dependency "network" {
 }
 
 inputs = {
+  vpc = dependency.network.outputs.vpc_id
   private_subnets = dependency.network.outputs.privatesubnets
   public_subnets = dependency.network.outputs.publicsubnets
   environment = "dev"
-  saml_role = ""
+  secrets_saml_users = ["ekrata.gm@gmail.com"]
+  saml_role = "default"
   tags = {}
   app = "data-api-scraper"
 }

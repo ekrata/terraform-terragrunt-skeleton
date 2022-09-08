@@ -1,0 +1,121 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowTLSRequestsOnly",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "*",
+      "Resource": [
+        "arn:aws:s3:::terraform-skeleton-state-ekrata",
+        "arn:aws:s3:::terraform-skeleton-state-ekrata/*"
+      ],
+      "Condition": {
+        "Bool": {
+          "aws:SecureTransport": "false"
+        }
+      }
+    },
+    {
+      "Sid": "DenyNonTerraformerUsers",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "*",
+      "Resource": [
+        "arn:aws:s3:::terraform-skeleton-state-ekrata",
+        "arn:aws:s3:::terraform-skeleton-state-ekrata/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:PrincipalType": "User"
+        },
+        "StringNotLike": {
+          "aws:PrincipalTag/Terraformer": "*"
+        }
+      }
+    },
+    {
+      "Sid": "RestrictTerraformNonAdmins",
+      "Effect": "Deny",
+      "Principal": "*",
+      "NotAction": [
+        "s3:List*",
+        "s3:Get*",
+        "s3:Describe*",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::terraform-skeleton-state-ekrata",
+        "arn:aws:s3:::terraform-skeleton-state-ekrata/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:PrincipalType": "User"
+        },
+        "StringLike": {
+          "aws:PrincipalTag/Terraformer": "*"
+        },
+        "StringNotEquals": {
+          "aws:PrincipalTag/Terraformer": "Admin"
+        }
+      }
+    },
+    {
+      "Sid": "DenyNonBackendRoles",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "*",
+      "Resource": [
+        "arn:aws:s3:::terraform-skeleton-state-ekrata",
+        "arn:aws:s3:::terraform-skeleton-state-ekrata/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:PrincipalType": "AssumedRole"
+        },
+        "StringNotLike": {
+          "aws:userId": "AROATAFG3LHJGYZ55DGFZ:*"
+        }
+      }
+    },
+    {
+      "Sid": "ResrictBackendRoleToReadWrite",
+      "Effect": "Deny",
+      "Principal": "*",
+      "NotAction": [
+        "s3:ListBucket",
+        "s3:GetBucketVersioning",
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::terraform-skeleton-state-ekrata",
+        "arn:aws:s3:::terraform-skeleton-state-ekrata/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:PrincipalType": "AssumedRole"
+        },
+        "StringLike": {
+          "aws:userId": "AROATAFG3LHJGYZ55DGFZ:*"
+        }
+      }
+    },
+    {
+      "Sid": "DenyAllOtherPrincipals",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "*",
+      "Resource": [
+        "arn:aws:s3:::terraform-skeleton-state-ekrata",
+        "arn:aws:s3:::terraform-skeleton-state-ekrata/*"
+      ],
+      "Condition": {
+        "StringNotEquals": {
+          "aws:PrincipalType": ["AssumedRole", "Account", "User"]
+        }
+      }
+    }
+  ]
+}

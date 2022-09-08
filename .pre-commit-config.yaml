@@ -15,11 +15,11 @@ repos:
       - id: double-quote-string-fixer
       # - id: end-of-file-fixer
 
-  - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.45.0
-    hooks:
-      - id: terraform_fmt
-      - id: terraform_validate
+  # - repo: https://github.com/antonbabenko/pre-commit-terraform
+  #   rev: v1.45.0
+  #   hooks:
+  #     - id: terraform_fmt
+  #     - id: terraform_validate
 
   # - repo: https://github.com/gruntwork-io/pre-commit
   #   rev: v0.1.10

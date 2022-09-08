@@ -1,0 +1,20 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::206508349906:user/tf-admin-account"
+      },
+      "Action": "sts:AssumeRole",
+      "Condition": {
+        "StringEquals": {
+          "aws:PrincipalType": "User"
+        },
+        "StringLike": {
+          "aws:PrincipalTag/Terraformer": "*"
+        }
+      }
+    }
+  ]
+}

@@ -145,6 +145,9 @@ Resources:
       Path: /terraform/
       ManagedPolicyArns:
         - !Ref TerraformStateReadWritePolicy
+      Tags:
+        - Key: "Terraformer"
+          Value: "Admin"
 
   TerraformStateBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
