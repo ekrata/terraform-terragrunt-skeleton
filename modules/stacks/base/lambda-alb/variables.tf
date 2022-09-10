@@ -51,4 +51,6 @@ variable "lambda_timeout" {
 }
 
 # The SAML role to use for adding users to the ECR policy
-variable "saml_role" {}
+variable "saml_role" {
+  default = "ecr_role"
+}

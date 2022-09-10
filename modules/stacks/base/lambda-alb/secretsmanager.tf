@@ -69,10 +69,8 @@ locals {
   ]
 
   # list of role users and saml users for policies
-  role_and_saml_ids = [
-    "${aws_iam_role.app_role.unique_id}:*",
-    "${local.saml_user_ids}",
-  ]
+  role_and_saml_ids = concat("${aws_iam_role.app_role.unique_id}:*",
+    "${local.saml_user_ids}")
 
   sm_arn = "arn:aws:secretsmanager:${var.region}:${data.aws_caller_identity.current.account_id}:secret:${var.app}-${var.environment}-??????"
 }
@@ -125,7 +123,7 @@ data "aws_iam_policy_document" "kms_resource_policy_doc" {
     condition {
       test     = "StringNotLike"
       variable = "aws:userId"
-      values   = tolist(local.role_and_saml_ids)
+      values   = "${tolist(local.role_and_saml_ids)}"
     }
   }
   statement {
