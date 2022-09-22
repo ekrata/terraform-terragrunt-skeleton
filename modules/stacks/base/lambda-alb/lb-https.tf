@@ -10,7 +10,7 @@ resource "aws_alb_listener" "https" {
   load_balancer_arn = "${aws_alb.main.id}"
   port              = "${var.https_port}"
   protocol          = "HTTPS"
-  certificate_arn   = "${aws_acm_certificate_validation.cert.certificate_arn}"
+  certificate_arn   = "${aws_acm_certificate.cert.arn}"
 
   default_action {
     type             = "forward"

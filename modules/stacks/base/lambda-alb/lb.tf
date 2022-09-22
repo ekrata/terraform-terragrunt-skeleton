@@ -41,7 +41,7 @@ resource "aws_alb_target_group" "main" {
 resource "aws_lb_target_group_attachment" "main" {
   target_group_arn = "${aws_alb_target_group.main.arn}"
   target_id        = "${aws_lambda_function.lambda.arn}"
-  depends_on       = ["aws_lambda_permission.allow_alb_to_invoke_lambda"]
+  depends_on       = [aws_lambda_permission.allow_alb_to_invoke_lambda]
 }
 
 data "aws_elb_service_account" "main" {}

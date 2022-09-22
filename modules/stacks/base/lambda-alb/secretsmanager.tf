@@ -1,4 +1,11 @@
 # Allow for code reuse...
+# get the saml user info so we can get the unique_id
+resource "aws_iam_role" "saml_role" {
+  name = "${var.saml_role}"
+
+  assume_role_policy = data.aws_iam_policy_document.sm_resource_policy_doc.json
+}
+
 locals {
   # KMS write actions
   kms_write_actions = [
@@ -65,21 +72,21 @@ locals {
   saml_user_ids = [
     "${data.aws_caller_identity.current.user_id}",
     "${data.aws_caller_identity.current.account_id}",
-    "${formatlist("%s:%s", data.aws_iam_role.saml_role.unique_id, var.secrets_saml_users)}",
+    # "${formatlist("%s:%s", aws_iam_role.saml_role.unique_id, var.secrets_saml_users)}",
   ]
 
   # list of role users and saml users for policies
-  role_and_saml_ids = concat("${aws_iam_role.app_role.unique_id}:*",
-    "${local.saml_user_ids}")
+  role_and_saml_ids = flatten(concat(["${aws_iam_role.app_role.unique_id}:*"],
+    ["${local.saml_user_ids}"]))
 
-  sm_arn = "arn:aws:secretsmanager:${var.region}:${data.aws_caller_identity.current.account_id}:secret:${var.app}-${var.environment}-??????"
+  sm_arn = toset(["arn:aws:secretsmanager:${var.region}:${data.aws_caller_identity.current.account_id}:secret:${var.app}-${var.environment}-??????"])
 }
 
 # create the KMS key for this secret
 resource "aws_kms_key" "sm_kms_key" {
   description = "${var.app}-${var.environment}"
   policy      = "${data.aws_iam_policy_document.kms_resource_policy_doc.json}"
-  tags        = "${merge(var.tags, map("Name", format("%s-%s", var.app, var.environment)))}"
+  tags        = "${merge(var.tags, tomap({"Name" = format("%s-%s", var.app, var.environment)}))}"
 }
 
 # alias for the key
@@ -164,6 +171,9 @@ data "aws_iam_policy_document" "kms_resource_policy_doc" {
   }
 }
 
+
+
+
 # create the secretsmanager secret
 resource "aws_secretsmanager_secret" "sm_secret" {
   name       = "${var.app}-${var.environment}"
@@ -172,15 +182,39 @@ resource "aws_secretsmanager_secret" "sm_secret" {
   policy     = "${data.aws_iam_policy_document.sm_resource_policy_doc.json}"
 }
 
+resource "aws_secretsmanager_secret" "porkbun_secret" {
+  name       = "${var.app}-${var.environment}-porkbun"
+  kms_key_id = "${aws_kms_key.sm_kms_key.key_id}"
+  tags       = "${var.tags}"
+  policy     = "${data.aws_iam_policy_document.sm_resource_policy_doc.json}"
+}
+
+
+
+
+# # create the placeholder secret json
+# resource "aws_secretsmanager_secret_version" "porkbun" {
+#   secret_id     = "${aws_secretsmanager_secret.sm_secret.id}"
+#   secret_string = "{}"
+# }
+
 # create the placeholder secret json
 resource "aws_secretsmanager_secret_version" "initial" {
   secret_id     = "${aws_secretsmanager_secret.sm_secret.id}"
   secret_string = "{}"
 }
 
-# get the saml user info so we can get the unique_id
-data "aws_iam_role" "saml_role" {
-  name = "${var.saml_role}"
+# create the placeholder secret json
+resource "aws_secretsmanager_secret_version" "porkbun" {
+  secret_id     = "${aws_secretsmanager_secret.porkbun_secret.id}"
+  secret_string = jsonencode(var.porkbun_config)
+}
+
+locals {
+ porkbun_config = {
+  sensitive = true
+  value = jsondecode(aws_secretsmanager_secret_version.porkbun.secret_string)
+  }
 }
 
 # resource policy doc that limits access to secret
@@ -216,7 +250,7 @@ data "aws_iam_policy_document" "sm_resource_policy_doc" {
     resources = local.sm_arn
 
     condition {
-      test     = "StringNotLike"
+      test     = "ForAnyValue:StringNotLike"
       variable = "aws:userId"
       values   = local.role_and_saml_ids
     }
@@ -256,6 +290,7 @@ data "aws_iam_policy_document" "sm_resource_policy_doc" {
       test     = "StringLike"
       variable = "aws:userId"
       values   = local.role_and_saml_ids
+
     }
   }
 }
@@ -264,3 +299,12 @@ data "aws_iam_policy_document" "sm_resource_policy_doc" {
 variable "secrets_saml_users" {
   type = list
 }
+
+
+
+
+
+
+# data "aws_iam_role" "saml_role" {
+#   name = "${var.saml_role}"
+# }

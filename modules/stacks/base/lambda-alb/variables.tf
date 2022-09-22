@@ -24,6 +24,14 @@ variable "lb_protocol" {
   default = "HTTP"
 }
 
+variable "porkbun_config" {
+  type = map(string)
+  default = {
+    api_key = "",
+    secret_key = ""
+  }
+}
+
 # Network configuration
 
 # The VPC to use for the Fargate cluster
