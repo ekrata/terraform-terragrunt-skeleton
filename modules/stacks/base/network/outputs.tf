@@ -29,3 +29,6 @@ output "publicsubnets" {
 output "privatesubnets" {
   value = aws_subnet.publicsubnets.id
 }
+
+
+

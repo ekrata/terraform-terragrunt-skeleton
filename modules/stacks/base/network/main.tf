@@ -52,6 +52,8 @@
    subnet_id = aws_subnet.publicsubnets.id
  }
 
+
+
 #  module "nat_instance" {
 #   source = "../../../..//modules/components/network/nat_instance/"
 

@@ -1,14 +1,14 @@
 resource "aws_security_group" "nsg_lb" {
   name        = "${var.app}-${var.environment}-lb"
   description = "Allow connections from external resources while limiting connections from ${var.app}-${var.environment}-lb to internal resources"
-  vpc_id      = "${var.vpc}"
+  vpc_id      = "${var.vpc_id}"
   tags        = "${var.tags}"
 }
 
 resource "aws_security_group" "nsg_lambda" {
   name        = "${var.app}-${var.environment}-lambda"
   description = "Limit connections from internal resources while allowing ${var.app}-${var.environment}-lambda to connect to all external resources"
-  vpc_id      = "${var.vpc}"
+  vpc_id      = "${var.vpc_id}"
   tags        = "${var.tags}"
 }
 

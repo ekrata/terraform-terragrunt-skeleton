@@ -24,6 +24,10 @@ variable "lb_protocol" {
   default = "HTTP"
 }
 
+variable "db_password" {
+ type = string
+}
+
 variable "porkbun_config" {
   type = map(string)
   default = {
@@ -32,10 +36,66 @@ variable "porkbun_config" {
   }
 }
 
+variable "dns_ip" {
+  description = "IP address of Master DNS-Server"
+}
+variable "dns_key" {
+  description = "name of the DNS-Key to user"
+}
+variable "dns_key_secret" {
+  description = "base 64 encoded string"
+}
+
+variable "TF_VAR_porkbun_secret_key" {
+  type = string
+  default = ""
+}
+
+variable "TF_VAR_porkbun_api_key" {
+  type = string
+  default = ""
+}
+
+variable "TF_VAR_cloudflare_zone_id" {
+  type = string
+  default = ""
+}
+
+variable "TF_VAR_cloudflare_account_id" {
+  type = string
+  default = ""
+}
+
+variable "TF_VAR_cloudflare_api_token" {
+  type = string
+  default = ""
+}
+
+variable "TF_VAR_cloudflare_api_key" {
+  type = string
+  default = ""
+}
+
+variable "TF_VAR_cloudflare_email" {
+  type = string
+  default = ""
+}
+
+variable "CLOUDFLARE_API_TOKEN" {
+  type = string
+  sensitive = true
+  default = ""
+}
+
+variable "subdomain" {
+  type = string
+  default = ""
+}
+
 # Network configuration
 
 # The VPC to use for the Fargate cluster
-variable "vpc" {}
+variable "vpc_id" {}
 
 # The private subnets, minimum of 2, that are a part of the VPC(s)
 variable "private_subnets" {}

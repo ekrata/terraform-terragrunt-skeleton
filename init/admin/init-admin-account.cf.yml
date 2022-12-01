@@ -109,6 +109,13 @@ Resources:
               - "s3:GetBucketVersioning"
               - "s3:CreateBucket"
             Resource: !Sub "arn:aws:s3:::${StateBucketName}"
+          - Sid: AllowRds
+            Action: iam:CreateServiceLinkedRole,
+            Effect: Allow,
+            Resource: "arn:aws:iam::*:role/aws-service-role/rds.amazonaws.com/AWSServiceRoleForRDS"
+            Condition:
+              StringLike: "iam:AWSServiceName:rds.amazonaws.com"
+
           - Sid: AllowStateReadWrite
             Effect: Allow
             Action:

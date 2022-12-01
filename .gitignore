@@ -25,6 +25,7 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+**/.env
 
 # Include override files you do wish to add to version control using negated pattern
 # !example_override.tf
@@ -37,3 +38,4 @@ override.tf.json
 **/.terragrunt-cache/*
 
 # End of https://www.toptal.com/developers/gitignore/api/terraform,terragrunt
+deployments/base/dev/lambda-alb/terraform.tfvars

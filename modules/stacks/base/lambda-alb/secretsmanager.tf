@@ -182,40 +182,12 @@ resource "aws_secretsmanager_secret" "sm_secret" {
   policy     = "${data.aws_iam_policy_document.sm_resource_policy_doc.json}"
 }
 
-resource "aws_secretsmanager_secret" "porkbun_secret" {
-  name       = "${var.app}-${var.environment}-porkbun"
-  kms_key_id = "${aws_kms_key.sm_kms_key.key_id}"
-  tags       = "${var.tags}"
-  policy     = "${data.aws_iam_policy_document.sm_resource_policy_doc.json}"
-}
-
-
-
-
-# # create the placeholder secret json
-# resource "aws_secretsmanager_secret_version" "porkbun" {
-#   secret_id     = "${aws_secretsmanager_secret.sm_secret.id}"
-#   secret_string = "{}"
-# }
-
 # create the placeholder secret json
 resource "aws_secretsmanager_secret_version" "initial" {
   secret_id     = "${aws_secretsmanager_secret.sm_secret.id}"
   secret_string = "{}"
 }
 
-# create the placeholder secret json
-resource "aws_secretsmanager_secret_version" "porkbun" {
-  secret_id     = "${aws_secretsmanager_secret.porkbun_secret.id}"
-  secret_string = jsonencode(var.porkbun_config)
-}
-
-locals {
- porkbun_config = {
-  sensitive = true
-  value = jsondecode(aws_secretsmanager_secret_version.porkbun.secret_string)
-  }
-}
 
 # resource policy doc that limits access to secret
 data "aws_iam_policy_document" "sm_resource_policy_doc" {
